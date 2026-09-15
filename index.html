@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Family Resources Game Jam</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F1EAD6;
+    --paper-line:#DED0AA;
+    --surface:#FFFCF4;
+    --ink:#33261A;
+    --ink-soft:#6E5F4C;
+    --tao:#E2572B;      /* human resources */
+    --tao-dark:#B6421D;
+    --bagay:#2F7D5C;    /* material resources */
+    --bagay-dark:#1F5A40;
+    --oras:#3350A6;     /* time */
+    --oras-dark:#243B7E;
+    --pera:#D9A441;     /* money */
+    --pera-dark:#A87A24;
+    --teal:#1F6F78;
+    --teal-dark:#154E55;
+    --need:#2F7D5C;
+    --want:#C24E63;
+    --radius-stage:18px;
+    --radius-pill:999px;
+    --shadow-card:0 3px 0 rgba(51,38,26,0.12);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.35), rgba(255,255,255,0)),
+      repeating-linear-gradient(0deg, rgba(51,38,26,0.03) 0px, rgba(51,38,26,0.03) 1px, transparent 1px, transparent 34px),
+      var(--paper);
+    color:var(--ink);
+    font-family:'Work Sans', sans-serif;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding:28px 16px 60px;
+  }
+  h1,h2,h3,.display{font-family:'Baloo 2', sans-serif; font-weight:700; margin:0;}
+  .app{width:100%; max-width:760px;}
+  .stage{
+    background:var(--surface);
+    border:1px solid var(--paper-line);
+    border-radius:var(--radius-stage);
+    box-shadow:var(--shadow-card);
+    padding:28px 26px 30px;
+    position:relative;
+    overflow:hidden;
+  }
+  .screen{display:none;}
+  .screen.active{display:block; animation:fadeIn .35s ease;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;}}
+
+  /* ---------- Landing / hero ---------- */
+  .hero-wrap{display:flex; justify-content:center; margin-bottom:6px;}
+  .kicker{
+    text-align:center;
+    color:var(--ink-soft);
+    font-size:15px;
+    margin-top:14px;
+  }
+  h1.title{font-size:30px; text-align:center; line-height:1.15; margin-top:4px;}
+  h1.title span{color:var(--teal);}
+  .subhead{
+    text-align:center;
+    color:var(--ink-soft);
+    font-size:15px;
+    max-width:460px;
+    margin:10px auto 24px;
+    line-height:1.5;
+  }
+  .divider{height:1px; background:var(--paper-line); margin:22px 0;}
+
+  .field-label{font-family:'Baloo 2',sans-serif; font-size:15px; margin-bottom:10px; color:var(--ink);}
+  .choice-row{display:flex; gap:10px; flex-wrap:wrap;}
+  .choice-btn{
+    flex:1 1 160px;
+    border:2px solid var(--paper-line);
+    background:var(--surface);
+    border-radius:14px;
+    padding:14px 12px;
+    cursor:pointer;
+    text-align:left;
+    font-family:'Work Sans', sans-serif;
+    transition:border-color .15s ease, transform .1s ease;
+  }
+  .choice-btn strong{display:block; font-family:'Baloo 2',sans-serif; font-size:16px; margin-bottom:2px;}
+  .choice-btn small{color:var(--ink-soft); font-size:12.5px;}
+  .choice-btn:hover{transform:translateY(-1px);}
+  .choice-btn.selected{border-color:var(--teal); background:#EAF4F2;}
+
+  .team-inputs{display:none; gap:10px; margin-top:14px;}
+  .team-inputs.show{display:flex; flex-wrap:wrap;}
+  .team-inputs input{
+    flex:1 1 160px;
+    border:2px solid var(--paper-line);
+    border-radius:10px;
+    padding:10px 12px;
+    font-family:'Work Sans', sans-serif;
+    font-size:14px;
+    background:#fff;
+  }
+  .team-inputs input:nth-of-type(1){border-color:var(--tao);}
+  .team-inputs input:nth-of-type(2){border-color:var(--oras);}
+
+  .timer-row{display:flex; align-items:center; gap:12px; margin-top:18px;}
+  .timer-row select{
+    border:2px solid var(--paper-line);
+    border-radius:10px;
+    padding:8px 10px;
+    font-family:'Work Sans',sans-serif;
+    font-size:14px;
+    background:#fff;
+  }
+
+  .game-grid{display:grid; grid-template-columns:1fr; gap:12px; margin-top:22px;}
+  @media(min-width:520px){ .game-grid{grid-template-columns:1fr 1fr;} }
+  .game-card{
+    border-radius:16px;
+    padding:16px 16px 15px;
+    cursor:pointer;
+    color:#fff;
+    position:relative;
+    border:none;
+    text-align:left;
+    font-family:'Work Sans', sans-serif;
+    transition:transform .12s ease;
+  }
+  .game-card:hover{transform:translateY(-2px);}
+  .game-card .g-num{
+    font-family:'Baloo 2',sans-serif;
+    font-size:12px;
+    opacity:.85;
+    letter-spacing:.02em;
+  }
+  .game-card h3{font-size:19px; margin:2px 0 5px; color:#fff;}
+  .game-card p{margin:0; font-size:12.5px; line-height:1.45; opacity:.92;}
+  .game-card.c1{background:linear-gradient(150deg, var(--tao), var(--tao-dark));}
+  .game-card.c2{background:linear-gradient(150deg, var(--want), #8E2F42);}
+  .game-card.c3{background:linear-gradient(150deg, var(--oras), var(--oras-dark));}
+
+  /* ---------- shared game header ---------- */
+  .game-top{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;}
+  .back-btn{
+    background:none; border:none; cursor:pointer;
+    font-family:'Work Sans',sans-serif; font-size:13.5px; color:var(--ink-soft);
+    padding:6px 2px; display:flex; align-items:center; gap:4px;
+  }
+  .back-btn:hover{color:var(--ink);}
+  .gear-btn{
+    background:var(--paper); border:1px solid var(--paper-line); cursor:pointer;
+    width:34px; height:34px; border-radius:var(--radius-pill); font-size:15px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .game-title{font-size:20px; text-align:center; flex:1;}
+
+  .score-bar{
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--paper); border:1px solid var(--paper-line);
+    border-radius:14px; padding:12px 16px; margin-top:16px; gap:10px;
+  }
+  .score-block{text-align:center; min-width:64px;}
+  .score-block .num{font-family:'Baloo 2',sans-serif; font-size:24px; line-height:1;}
+  .score-block .lbl{font-size:11px; color:var(--ink-soft); margin-top:2px;}
+  .timer-block{text-align:center;}
+  .timer-block .num{font-family:'Baloo 2',sans-serif; font-size:28px; line-height:1;}
+  .timer-block .num.low{color:var(--want); animation:pulse .6s infinite;}
+  @keyframes pulse{0%,100%{transform:scale(1);} 50%{transform:scale(1.12);}}
+  .turn-flag{
+    text-align:center; font-family:'Baloo 2',sans-serif; font-size:13px;
+    margin-top:10px; color:var(--ink-soft);
+  }
+  .turn-flag b{color:var(--ink);}
+
+  /* ---------- Game 1: sorting ---------- */
+  .item-stage{
+    margin:26px auto 20px; max-width:340px;
+    background:var(--surface); border:2px dashed var(--paper-line);
+    border-radius:16px; padding:30px 20px; text-align:center;
+    min-height:96px; display:flex; align-items:center; justify-content:center;
+  }
+  .item-stage .item-text{font-family:'Baloo 2',sans-serif; font-size:21px;}
+  .bin-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  @media(min-width:480px){ .bin-grid{grid-template-columns:repeat(4,1fr);} }
+  .bin-btn{
+    border:none; border-radius:14px; padding:14px 6px; color:#fff; cursor:pointer;
+    font-family:'Baloo 2',sans-serif; font-size:14px; display:flex; flex-direction:column;
+    align-items:center; gap:4px; transition:transform .08s ease;
+  }
+  .bin-btn:active{transform:scale(.95);}
+  .bin-btn .ic{font-size:20px;}
+  .bin-tao{background:var(--tao);}
+  .bin-bagay{background:var(--bagay);}
+  .bin-oras{background:var(--oras);}
+  .bin-pera{background:var(--pera); color:#3A2A05;}
+
+  .feedback-flash{
+    text-align:center; font-family:'Baloo 2',sans-serif; font-size:14px;
+    min-height:20px; margin-top:12px; color:var(--ink-soft);
+  }
+  .feedback-flash.good{color:var(--bagay);}
+  .feedback-flash.bad{color:var(--want);}
+
+  .progress-dots{display:flex; justify-content:center; gap:5px; margin-top:16px; flex-wrap:wrap;}
+  .dot{width:8px; height:8px; border-radius:50%; background:var(--paper-line);}
+  .dot.done{background:var(--teal);}
+
+  /* ---------- Game 2: need/want ---------- */
+  .falling-wrap{
+    margin:26px auto 22px; max-width:340px; min-height:120px;
+    display:flex; align-items:center; justify-content:center; position:relative;
+  }
+  .falling-card{
+    background:var(--surface); border:2px solid var(--paper-line);
+    border-radius:16px; padding:22px 26px; text-align:center;
+    font-family:'Baloo 2',sans-serif; font-size:22px;
+    box-shadow:var(--shadow-card);
+    animation:drop .35s ease;
+  }
+  @keyframes drop{from{transform:translateY(-18px); opacity:0;} to{transform:none; opacity:1;}}
+  .nw-row{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  .nw-btn{
+    border:none; border-radius:14px; padding:18px 10px; color:#fff; cursor:pointer;
+    font-family:'Baloo 2',sans-serif; font-size:16px;
+  }
+  .nw-btn.need{background:var(--need);}
+  .nw-btn.want{background:var(--want);}
+  .nw-btn:active{transform:scale(.96);}
+  .heat-track{height:6px; border-radius:99px; background:var(--paper-line); margin-top:16px; overflow:hidden;}
+  .heat-fill{height:100%; background:linear-gradient(90deg,var(--teal),var(--want)); width:0%; transition:width .3s linear;}
+
+  /* ---------- Game 3: wise choice ---------- */
+  .scenario-box{
+    background:var(--paper); border:1px solid var(--paper-line); border-radius:14px;
+    padding:16px 18px; margin:20px 0 16px; font-size:14.5px; line-height:1.55;
+  }
+  .scenario-box .sc-label{font-family:'Baloo 2',sans-serif; font-size:12.5px; color:var(--oras-dark); margin-bottom:4px;}
+  .opt-col{display:flex; flex-direction:column; gap:10px;}
+  .opt-btn{
+    border:2px solid var(--paper-line); background:var(--surface); border-radius:14px;
+    padding:14px 16px; text-align:left; cursor:pointer; font-family:'Work Sans',sans-serif; font-size:14px;
+  }
+  .opt-btn b{font-family:'Baloo 2',sans-serif; display:block; margin-bottom:2px; font-size:14.5px;}
+  .opt-btn.correct{border-color:var(--bagay); background:#EAF6EF;}
+  .opt-btn.incorrect{border-color:var(--want); background:#FBEBEE;}
+  .explain-box{
+    margin-top:14px; padding:12px 14px; border-radius:12px; background:#EAF4F2;
+    border:1px solid #CFE4E1; font-size:13.5px; line-height:1.5; display:none;
+  }
+  .explain-box.show{display:block;}
+  .next-btn{
+    margin-top:16px; width:100%; border:none; border-radius:var(--radius-pill);
+    background:var(--teal); color:#fff; padding:12px; font-family:'Baloo 2',sans-serif;
+    font-size:15px; cursor:pointer; display:none;
+  }
+  .next-btn.show{display:block;}
+
+  /* ---------- End screen ---------- */
+  .end-banner{
+    text-align:center; padding:30px 10px 10px;
+  }
+  .end-banner .medal{font-size:48px;}
+  .end-banner h2{font-size:24px; margin-top:6px;}
+  .end-banner p{color:var(--ink-soft); font-size:14px; margin-top:6px;}
+  .end-scores{display:flex; justify-content:center; gap:28px; margin:22px 0;}
+  .end-scores .num{font-family:'Baloo 2',sans-serif; font-size:30px;}
+  .end-actions{display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:8px;}
+  .btn{
+    border:none; border-radius:var(--radius-pill); padding:11px 20px; cursor:pointer;
+    font-family:'Baloo 2',sans-serif; font-size:14px;
+  }
+  .btn.primary{background:var(--teal); color:#fff;}
+  .btn.ghost{background:var(--paper); color:var(--ink); border:1px solid var(--paper-line);}
+
+  /* ---------- Modal (editable questions) ---------- */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(51,38,26,.45); display:none;
+    align-items:flex-start; justify-content:center; padding:30px 14px; z-index:50; overflow-y:auto;
+  }
+  .modal-overlay.show{display:flex;}
+  .modal{
+    background:var(--surface); border-radius:16px; max-width:560px; width:100%;
+    padding:22px 20px 20px; margin-top:20px;
+  }
+  .modal h3{font-size:18px; margin-bottom:4px;}
+  .modal .modal-sub{color:var(--ink-soft); font-size:13px; margin-bottom:14px;}
+  .modal-close{float:right; background:none; border:none; font-size:18px; cursor:pointer; color:var(--ink-soft);}
+  .row-edit{
+    display:flex; gap:8px; align-items:center; margin-bottom:8px; flex-wrap:wrap;
+    border-bottom:1px solid var(--paper-line); padding-bottom:8px;
+  }
+  .row-edit input[type=text]{
+    flex:1 1 140px; border:1px solid var(--paper-line); border-radius:8px; padding:7px 9px; font-size:13px; font-family:'Work Sans',sans-serif;
+  }
+  .row-edit select{
+    border:1px solid var(--paper-line); border-radius:8px; padding:7px 6px; font-size:13px; font-family:'Work Sans',sans-serif;
+  }
+  .row-edit .del-row{
+    background:none; border:none; color:var(--want); cursor:pointer; font-size:16px; padding:2px 6px;
+  }
+  .sc-edit-block{border:1px solid var(--paper-line); border-radius:10px; padding:10px 12px; margin-bottom:10px;}
+  .sc-edit-block textarea, .sc-edit-block input[type=text]{
+    width:100%; border:1px solid var(--paper-line); border-radius:8px; padding:7px 9px;
+    font-size:13px; font-family:'Work Sans',sans-serif; margin-top:5px; resize:vertical;
+  }
+  .sc-edit-block label{font-size:11.5px; color:var(--ink-soft); display:block; margin-top:7px;}
+  .sc-edit-block .radio-row{display:flex; gap:14px; margin-top:5px; font-size:12.5px;}
+  .modal-actions{display:flex; gap:8px; justify-content:space-between; margin-top:16px; flex-wrap:wrap;}
+  .add-row-btn{
+    background:none; border:1px dashed var(--paper-line); border-radius:8px; padding:7px 10px;
+    font-size:12.5px; cursor:pointer; color:var(--ink-soft); width:100%; margin-top:2px;
+  }
+
+  footer.tip{
+    text-align:center; font-size:12px; color:var(--ink-soft); margin-top:16px;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="stage">
+
+    <!-- ============= LANDING ============= -->
+    <section class="screen active" id="screen-landing">
+      <div class="hero-wrap">
+        <svg id="houseHero" width="190" height="150" viewBox="0 0 190 150">
+          <!-- chimney (human/tao) -->
+          <rect id="hChim" x="128" y="18" width="16" height="34" fill="#E2572B" rx="2"/>
+          <!-- roof (time/oras) -->
+          <polygon id="hRoof" points="95,20 170,72 20,72" fill="#3350A6"/>
+          <circle id="hClock" cx="95" cy="52" r="10" fill="#FFFCF4"/>
+          <line x1="95" y1="52" x2="95" y2="45" stroke="#3350A6" stroke-width="2" stroke-linecap="round"/>
+          <line x1="95" y1="52" x2="100" y2="52" stroke="#3350A6" stroke-width="2" stroke-linecap="round"/>
+          <!-- walls (material/bagay) -->
+          <rect id="hWall" x="34" y="72" width="122" height="60" fill="#2F7D5C" rx="4"/>
+          <!-- door (money/pera) -->
+          <rect id="hDoor" x="82" y="96" width="26" height="36" fill="#D9A441" rx="3"/>
+          <circle cx="103" cy="114" r="1.6" fill="#3A2A05"/>
+          <!-- windows -->
+          <rect x="48" y="88" width="18" height="18" fill="#FFFCF4" rx="2"/>
+          <rect x="124" y="88" width="18" height="18" fill="#FFFCF4" rx="2"/>
+        </svg>
+      </div>
+      <p class="kicker">TLE · Family &amp; Consumer Science · Grade 6</p>
+      <h1 class="title">Family Resources <span>Game Jam</span></h1>
+      <p class="subhead">Three quick classroom games on family resources, needs, wants, and making wise choices — built for solo practice or a two-team showdown.</p>
+
+      <div class="divider"></div>
+
+      <div class="field-label">Who's playing?</div>
+      <div class="choice-row">
+        <button class="choice-btn selected" id="modeSoloBtn" onclick="setMode('solo')">
+          <strong>🧑 Solo Play</strong>
+          <small>One learner races the clock for a high score.</small>
+        </button>
+        <button class="choice-btn" id="modeTeamBtn" onclick="setMode('team')">
+          <strong>🤝 Team Battle</strong>
+          <small>Two groups take turns answering for points.</small>
+        </button>
+      </div>
+      <div class="team-inputs" id="teamInputs">
+        <input type="text" id="teamAName" placeholder="Team A name" value="Grupo Bituin">
+        <input type="text" id="teamBName" placeholder="Team B name" value="Grupo Araw">
+      </div>
+
+      <div class="timer-row">
+        <span class="field-label" style="margin:0;">Round length</span>
+        <select id="timerSelect">
+          <option value="120">2:00</option>
+          <option value="150" selected>2:30</option>
+          <option value="180">3:00</option>
+        </select>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="field-label">Choose a game</div>
+      <div class="game-grid">
+        <button class="game-card c1" onclick="startGame('g1')">
+          <div class="g-num">Game 1 · Days 1–2</div>
+          <h3>Sagip Resources</h3>
+          <p>Sort family resources into Tao (People), Bagay (Things), Oras (Time), or Pera (Money) before time runs out.</p>
+        </button>
+        <button class="game-card c2" onclick="startGame('g2')">
+          <div class="g-num">Game 2 · Day 3</div>
+          <h3>Kailangan o Gusto?</h3>
+          <p>Catch each item as it drops in and decide fast: is it a need or a want?</p>
+        </button>
+        <button class="game-card c3" onclick="startGame('g3')" style="grid-column:1/-1;">
+          <div class="g-num">Game 3 · Days 4–5</div>
+          <h3>Matalinong Pasya (Wise Choice)</h3>
+          <p>Read each short family scenario and pick the wiser way to use limited resources.</p>
+        </button>
+      </div>
+      <footer class="tip">Tap the ⚙ inside any game to edit its items before you play.</footer>
+    </section>
+
+    <!-- ============= GAME 1: SORTING ============= -->
+    <section class="screen" id="screen-g1">
+      <div class="game-top">
+        <button class="back-btn" onclick="goLanding()">← Back</button>
+        <h2 class="game-title">Sagip Resources</h2>
+        <button class="gear-btn" onclick="openEditor('g1')" title="Edit items">⚙</button>
+      </div>
+      <div class="score-bar" id="g1-scorebar"></div>
+      <div class="turn-flag" id="g1-turnflag"></div>
+      <div class="item-stage"><div class="item-text" id="g1-itemtext">—</div></div>
+      <div class="bin-grid">
+        <button class="bin-btn bin-tao" onclick="g1Answer('tao')"><span class="ic">👪</span>Tao (People)</button>
+        <button class="bin-btn bin-bagay" onclick="g1Answer('bagay')"><span class="ic">🧰</span>Bagay (Things)</button>
+        <button class="bin-btn bin-oras" onclick="g1Answer('oras')"><span class="ic">⏰</span>Oras (Time)</button>
+        <button class="bin-btn bin-pera" onclick="g1Answer('pera')"><span class="ic">💰</span>Pera (Money)</button>
+      </div>
+      <div class="feedback-flash" id="g1-feedback"></div>
+      <div class="progress-dots" id="g1-dots"></div>
+    </section>
+
+    <!-- ============= GAME 2: NEED/WANT ============= -->
+    <section class="screen" id="screen-g2">
+      <div class="game-top">
+        <button class="back-btn" onclick="goLanding()">← Back</button>
+        <h2 class="game-title">Kailangan o Gusto?</h2>
+        <button class="gear-btn" onclick="openEditor('g2')" title="Edit items">⚙</button>
+      </div>
+      <div class="score-bar" id="g2-scorebar"></div>
+      <div class="turn-flag" id="g2-turnflag"></div>
+      <div class="falling-wrap"><div class="falling-card" id="g2-card">—</div></div>
+      <div class="nw-row">
+        <button class="nw-btn need" onclick="g2Answer('need')">🌾 Kailangan (Need)</button>
+        <button class="nw-btn want" onclick="g2Answer('want')">🎈 Gusto (Want)</button>
+      </div>
+      <div class="heat-track"><div class="heat-fill" id="g2-heat"></div></div>
+      <div class="feedback-flash" id="g2-feedback"></div>
+      <div class="progress-dots" id="g2-dots"></div>
+    </section>
+
+    <!-- ============= GAME 3: WISE CHOICE ============= -->
+    <section class="screen" id="screen-g3">
+      <div class="game-top">
+        <button class="back-btn" onclick="goLanding()">← Back</button>
+        <h2 class="game-title">Matalinong Pasya</h2>
+        <button class="gear-btn" onclick="openEditor('g3')" title="Edit items">⚙</button>
+      </div>
+      <div class="score-bar" id="g3-scorebar"></div>
+      <div class="turn-flag" id="g3-turnflag"></div>
+      <div class="scenario-box">
+        <div class="sc-label">The situation</div>
+        <div id="g3-scenario">—</div>
+      </div>
+      <div class="opt-col">
+        <button class="opt-btn" id="g3-optA" onclick="g3Answer(0)"></button>
+        <button class="opt-btn" id="g3-optB" onclick="g3Answer(1)"></button>
+      </div>
+      <div class="explain-box" id="g3-explain"></div>
+      <button class="next-btn" id="g3-next" onclick="g3Next()">Next situation →</button>
+      <div class="progress-dots" id="g3-dots"></div>
+    </section>
+
+    <!-- ============= END SCREEN ============= -->
+    <section class="screen" id="screen-end">
+      <div class="end-banner">
+        <div class="medal" id="end-medal">🏆</div>
+        <h2 id="end-title">Round complete!</h2>
+        <p id="end-sub">Nicely done.</p>
+        <div class="end-scores" id="end-scores"></div>
+        <div class="end-actions">
+          <button class="btn primary" onclick="replaySame()">Play again</button>
+          <button class="btn ghost" onclick="goLanding()">Choose another game</button>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<!-- ============= EDIT MODAL ============= -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeEditor()">✕</button>
+    <h3 id="modalTitle">Edit items</h3>
+    <p class="modal-sub" id="modalSub">Change the wording, add your own, or remove ones you don't need. Changes apply for this session.</p>
+    <div id="modalBody"></div>
+    <button class="add-row-btn" id="modalAddBtn">+ Add item</button>
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="resetDefaults()">Reset to defaults</button>
+      <button class="btn primary" onclick="saveEditor()">Save changes</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================= DEFAULT DATA ================= */
+const DEFAULTS = {
+  g1: [
+    {t:"Lola (grandmother)", c:"tao"},
+    {t:"Sewing machine", c:"bagay"},
+    {t:"Sunday afternoon", c:"oras"},
+    {t:"Coins in the piggy bank", c:"pera"},
+    {t:"Family tricycle", c:"bagay"},
+    {t:"A working parent", c:"tao"},
+    {t:"One hour before school", c:"oras"},
+    {t:"Weekly baon (allowance)", c:"pera"},
+    {t:"A helpful neighbor", c:"tao"},
+    {t:"Rice cooker", c:"bagay"},
+    {t:"Bedtime at 9 o'clock", c:"oras"},
+    {t:"Sari-sari store earnings", c:"pera"},
+    {t:"Older sibling who helps at home", c:"tao"},
+    {t:"Umbrella", c:"bagay"},
+    {t:"Weekend / Saturday", c:"oras"},
+    {t:"Money for jeepney fare", c:"pera"},
+    {t:"Grandfather's carpentry skill", c:"tao"},
+    {t:"School bag", c:"bagay"},
+    {t:"30 minutes of study time", c:"oras"},
+    {t:"Savings for school supplies", c:"pera"}
+  ],
+  g2: [
+    {t:"Rice for dinner", c:"need"},
+    {t:"Clean drinking water", c:"need"},
+    {t:"Shoes for school", c:"need"},
+    {t:"Medicine when sick", c:"need"},
+    {t:"Enough sleep", c:"need"},
+    {t:"School uniform", c:"need"},
+    {t:"Soap for bathing", c:"need"},
+    {t:"Paying the electric bill", c:"need"},
+    {t:"Umbrella during rainy days", c:"need"},
+    {t:"Toothbrush", c:"need"},
+    {t:"Newest video game", c:"want"},
+    {t:"Ice cream after lunch", c:"want"},
+    {t:"A brand-new toy", c:"want"},
+    {t:"Branded sneakers", c:"want"},
+    {t:"Candy from the sari-sari store", c:"want"},
+    {t:"Movie ticket", c:"want"},
+    {t:"Latest gadget", c:"want"},
+    {t:"Extra comic book", c:"want"},
+    {t:"Soda with meals", c:"want"},
+    {t:"A second toy car", c:"want"}
+  ],
+  g3: [
+    {
+      s:"Your family has ₱200 for snacks this whole week.",
+      a:"Buy simple, filling snacks like pandesal and juice every day.",
+      b:"Buy branded chips and soda every day until the money runs out by Wednesday.",
+      correct:0,
+      why:"Option A makes the ₱200 (money) last the whole week, so no one goes without a snack later on."
+    },
+    {
+      s:"The family only has 1 free hour together before dinner.",
+      a:"Everyone pitches in on chores, then rests together afterward.",
+      b:"One family member does all the chores while everyone else watches TV.",
+      correct:0,
+      why:"Sharing the hour (time resource) and the work (people resource) is fair and gets more done for everyone."
+    },
+    {
+      s:"You have ₱50 left over this week, and school supplies are due next month.",
+      a:"Save it toward the school supplies you'll need soon.",
+      b:"Spend it all on candy today.",
+      correct:0,
+      why:"Saving the ₱50 protects a resource you'll truly need later — a wise use of limited money."
+    },
+    {
+      s:"Lola offers to teach you her cooking skill for free this Saturday.",
+      a:"Join her and learn, since her time and skill (human resource) are valuable.",
+      b:"Skip it to play games instead.",
+      correct:0,
+      why:"Learning from Lola makes good use of a human resource that's freely offered and useful for life."
+    },
+    {
+      s:"₱100 is already set aside for tomorrow's tricycle gas so a parent can work. A sibling wants to spend it on a toy today.",
+      a:"Protect the ₱100 for gas, since it's needed for the family's livelihood.",
+      b:"Let the sibling spend it on the toy now.",
+      correct:0,
+      why:"The gas money supports the family's income (a bigger, ongoing need), so protecting it is the wiser call."
+    }
+  ]
+};
+
+let data = JSON.parse(JSON.stringify(DEFAULTS));
+
+/* ================= STATE ================= */
+let state = {
+  mode:'solo',
+  teamAName:'Grupo Bituin',
+  teamBName:'Grupo Araw',
+  roundSeconds:150,
+  currentGame:null,
+  timeLeft:0,
+  timerId:null,
+  turn:'A',
+  scoreA:0,
+  scoreB:0,
+  solo:0,
+  streak:0,
+  order:[],
+  idx:0,
+  total:8,
+  g3done:false,
+  g3answered:false
+};
+
+/* ================= LANDING / MODE ================= */
+function setMode(m){
+  state.mode = m;
+  document.getElementById('modeSoloBtn').classList.toggle('selected', m==='solo');
+  document.getElementById('modeTeamBtn').classList.toggle('selected', m==='team');
+  document.getElementById('teamInputs').classList.toggle('show', m==='team');
+}
+
+function goLanding(){
+  clearInterval(state.timerId);
+  showScreen('landing');
+}
+
+function showScreen(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+}
+
+/* ================= SHARED HELPERS ================= */
+function shuffled(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function readSetupFromLanding(){
+  state.teamAName = document.getElementById('teamAName').value.trim() || 'Team A';
+  state.teamBName = document.getElementById('teamBName').value.trim() || 'Team B';
+  state.roundSeconds = parseInt(document.getElementById('timerSelect').value,10);
+}
+
+function renderScorebar(gameKey){
+  const bar = document.getElementById(gameKey+'-scorebar');
+  const timeStr = formatTime(state.timeLeft);
+  const lowClass = state.timeLeft<=15 ? 'low' : '';
+  if(state.mode==='team'){
+    bar.innerHTML = `
+      <div class="score-block"><div class="num" style="color:var(--tao)">${state.scoreA}</div><div class="lbl">${escapeHtml(state.teamAName)}</div></div>
+      <div class="timer-block"><div class="num ${lowClass}">${timeStr}</div><div class="lbl">time left</div></div>
+      <div class="score-block"><div class="num" style="color:var(--oras)">${state.scoreB}</div><div class="lbl">${escapeHtml(state.teamBName)}</div></div>`;
+  }else{
+    bar.innerHTML = `
+      <div class="score-block"><div class="num" style="color:var(--teal)">${state.solo}</div><div class="lbl">score</div></div>
+      <div class="timer-block"><div class="num ${lowClass}">${timeStr}</div><div class="lbl">time left</div></div>
+      <div class="score-block"><div class="num" style="color:var(--ink-soft)">🔥${state.streak}</div><div class="lbl">streak</div></div>`;
+  }
+}
+
+function renderTurnFlag(gameKey){
+  const el = document.getElementById(gameKey+'-turnflag');
+  if(state.mode==='team'){
+    const name = state.turn==='A' ? state.teamAName : state.teamBName;
+    el.innerHTML = `Turn: <b>${escapeHtml(name)}</b>`;
+  }else{
+    el.innerHTML = '';
+  }
+}
+
+function formatTime(sec){
+  const m = Math.floor(sec/60);
+  const s = sec%60;
+  return m+':'+(s<10?'0':'')+s;
+}
+
+function escapeHtml(str){
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+function startTimer(gameKey){
+  clearInterval(state.timerId);
+  state.timeLeft = state.roundSeconds;
+  state.timerId = setInterval(()=>{
+    state.timeLeft--;
+    renderScorebar(gameKey);
+    if(state.timeLeft<=0){
+      clearInterval(state.timerId);
+      endRound();
+    }
+  },1000);
+}
+
+function switchTurnIfTeam(){
+  if(state.mode==='team'){
+    state.turn = state.turn==='A' ? 'B' : 'A';
+  }
+}
+
+function renderDots(gameKey, doneCount, total){
+  const wrap = document.getElementById(gameKey+'-dots');
+  let html='';
+  for(let i=0;i<total;i++){
+    html += `<div class="dot ${i<doneCount?'done':''}"></div>`;
+  }
+  wrap.innerHTML = html;
+}
+
+/* ================= GAME START ROUTER ================= */
+function startGame(key){
+  readSetupFromLanding();
+  state.currentGame = key;
+  state.scoreA=0; state.scoreB=0; state.solo=0; state.streak=0; state.turn='A';
+  if(key==='g1') initG1();
+  if(key==='g2') initG2();
+  if(key==='g3') initG3();
+}
+
+function replaySame(){
+  startGame(state.currentGame);
+}
+
+function endRound(){
+  const key = state.currentGame;
+  showScreen('end');
+  const medal = document.getElementById('end-medal');
+  const title = document.getElementById('end-title');
+  const sub = document.getElementById('end-sub');
+  const scores = document.getElementById('end-scores');
+  if(state.mode==='team'){
+    let winner, tie=false;
+    if(state.scoreA>state.scoreB) winner=state.teamAName;
+    else if(state.scoreB>state.scoreA) winner=state.teamBName;
+    else tie=true;
+    medal.textContent = tie ? '🤝' : '🏆';
+    title.textContent = tie ? "It's a tie!" : winner+' wins this round!';
+    sub.textContent = 'Great teamwork sorting out family resources, needs, and wants.';
+    scores.innerHTML = `
+      <div><div class="num" style="color:var(--tao)">${state.scoreA}</div><div class="lbl" style="font-size:12px;color:var(--ink-soft)">${escapeHtml(state.teamAName)}</div></div>
+      <div><div class="num" style="color:var(--oras)">${state.scoreB}</div><div class="lbl" style="font-size:12px;color:var(--ink-soft)">${escapeHtml(state.teamBName)}</div></div>`;
+  }else{
+    medal.textContent = state.solo>=10 ? '🌟' : '🏅';
+    title.textContent = 'Final score: '+state.solo;
+    sub.textContent = 'Best streak this round: '+state.streak;
+    scores.innerHTML = `<div><div class="num" style="color:var(--teal)">${state.solo}</div><div class="lbl" style="font-size:12px;color:var(--ink-soft)">points</div></div>`;
+  }
+}
+
+/* ================= GAME 1: SORTING ================= */
+function initG1(){
+  showScreen('g1');
+  state.order = shuffled(data.g1);
+  state.total = Math.min(10, state.order.length);
+  state.idx = 0;
+  renderScorebar('g1'); renderTurnFlag('g1'); renderDots('g1',0,state.total);
+  document.getElementById('g1-feedback').textContent='';
+  document.getElementById('g1-feedback').className='feedback-flash';
+  g1ShowItem();
+  startTimer('g1');
+}
+function g1ShowItem(){
+  if(state.idx>=state.total){ state.idx=0; state.order = shuffled(data.g1); }
+  document.getElementById('g1-itemtext').textContent = state.order[state.idx].t;
+}
+function g1Answer(choice){
+  const correct = state.order[state.idx].c;
+  const fb = document.getElementById('g1-feedback');
+  if(choice===correct){
+    fb.textContent = '✔ Tama! ('+labelFor(correct)+')';
+    fb.className='feedback-flash good';
+    addPoint(10);
+  }else{
+    fb.textContent = '✘ It was '+labelFor(correct)+'.';
+    fb.className='feedback-flash bad';
+    if(state.mode==='solo') state.streak=0;
+  }
+  renderScorebar('g1');
+  state.idx++;
+  renderDots('g1', Math.min(state.idx,state.total), state.total);
+  switchTurnIfTeam();
+  renderTurnFlag('g1');
+  g1ShowItem();
+}
+function labelFor(c){
+  return {tao:'Tao (People)', bagay:'Bagay (Things)', oras:'Oras (Time)', pera:'Pera (Money)', need:'Kailangan (Need)', want:'Gusto (Want)'}[c];
+}
+
+/* ================= GAME 2: NEED/WANT ================= */
+function initG2(){
+  showScreen('g2');
+  state.order = shuffled(data.g2);
+  state.total = Math.min(10, state.order.length);
+  state.idx = 0;
+  renderScorebar('g2'); renderTurnFlag('g2'); renderDots('g2',0,state.total);
+  document.getElementById('g2-feedback').textContent='';
+  document.getElementById('g2-feedback').className='feedback-flash';
+  g2ShowItem();
+  startTimer('g2');
+}
+function g2ShowItem(){
+  if(state.idx>=state.total){ state.idx=0; state.order = shuffled(data.g2); }
+  const card = document.getElementById('g2-card');
+  card.classList.remove('falling-card');
+  void card.offsetWidth;
+  card.classList.add('falling-card');
+  card.textContent = state.order[state.idx].t;
+  const heatPct = Math.max(0, Math.min(100, 100 - (state.timeLeft/state.roundSeconds*100)));
+  document.getElementById('g2-heat').style.width = heatPct+'%';
+}
+function g2Answer(choice){
+  const correct = state.order[state.idx].c;
+  const fb = document.getElementById('g2-feedback');
+  if(choice===correct){
+    fb.textContent = '✔ Tama! ('+labelFor(correct)+')';
+    fb.className='feedback-flash good';
+    addPoint(10);
+  }else{
+    fb.textContent = '✘ It was '+labelFor(correct)+'.';
+    fb.className='feedback-flash bad';
+    if(state.mode==='solo') state.streak=0;
+  }
+  renderScorebar('g2');
+  state.idx++;
+  renderDots('g2', Math.min(state.idx,state.total), state.total);
+  switchTurnIfTeam();
+  renderTurnFlag('g2');
+  g2ShowItem();
+}
+
+/* ================= GAME 3: WISE CHOICE ================= */
+function initG3(){
+  showScreen('g3');
+  state.order = shuffled(data.g3);
+  state.total = state.order.length;
+  state.idx = 0;
+  state.g3answered=false;
+  renderScorebar('g3'); renderTurnFlag('g3'); renderDots('g3',0,state.total);
+  document.getElementById('g3-explain').classList.remove('show');
+  document.getElementById('g3-next').classList.remove('show');
+  g3ShowItem();
+  startTimer('g3');
+}
+function g3ShowItem(){
+  const item = state.order[state.idx];
+  document.getElementById('g3-scenario').textContent = item.s;
+  const optA = document.getElementById('g3-optA');
+  const optB = document.getElementById('g3-optB');
+  optA.innerHTML = '<b>Option A</b>'+item.a;
+  optB.innerHTML = '<b>Option B</b>'+item.b;
+  optA.className='opt-btn'; optB.className='opt-btn';
+  document.getElementById('g3-explain').classList.remove('show');
+  document.getElementById('g3-next').classList.remove('show');
+  state.g3answered=false;
+}
+function g3Answer(pick){
+  if(state.g3answered) return;
+  state.g3answered = true;
+  const item = state.order[state.idx];
+  const optA = document.getElementById('g3-optA');
+  const optB = document.getElementById('g3-optB');
+  const chosen = pick===0?optA:optB;
+  const other = pick===0?optB:optA;
+  if(pick===item.correct){
+    chosen.classList.add('correct');
+    addPoint(15);
+  }else{
+    chosen.classList.add('incorrect');
+    other.classList.add('correct');
+    if(state.mode==='solo') state.streak=0;
+  }
+  const ex = document.getElementById('g3-explain');
+  ex.textContent = '💡 '+item.why;
+  ex.classList.add('show');
+  renderScorebar('g3');
+  renderDots('g3', Math.min(state.idx+1,state.total), state.total);
+  switchTurnIfTeam();
+  renderTurnFlag('g3');
+  const nextBtn = document.getElementById('g3-next');
+  if(state.idx < state.total-1){
+    nextBtn.textContent='Next situation →';
+  }else{
+    nextBtn.textContent='See results →';
+  }
+  nextBtn.classList.add('show');
+}
+function g3Next(){
+  state.idx++;
+  if(state.idx>=state.total){
+    clearInterval(state.timerId);
+    endRound();
+    return;
+  }
+  g3ShowItem();
+}
+
+/* ================= SCORING ================= */
+function addPoint(base){
+  if(state.mode==='team'){
+    if(state.turn==='A') state.scoreA += base; else state.scoreB += base;
+  }else{
+    state.streak++;
+    const bonus = state.streak>=3 ? 5 : 0;
+    state.solo += base + bonus;
+  }
+}
+
+/* ================= EDIT MODAL ================= */
+let editingGame = null;
+function openEditor(key){
+  editingGame = key;
+  document.getElementById('modalOverlay').classList.add('show');
+  if(key==='g1'){
+    document.getElementById('modalTitle').textContent='Edit Sagip Resources items';
+    document.getElementById('modalSub').textContent='Each item needs text and a correct resource type.';
+    renderG1Editor();
+  }else if(key==='g2'){
+    document.getElementById('modalTitle').textContent='Edit Need / Want items';
+    document.getElementById('modalSub').textContent='Each item needs text and whether it is a need or a want.';
+    renderG2Editor();
+  }else{
+    document.getElementById('modalTitle').textContent='Edit Wise Choice scenarios';
+    document.getElementById('modalSub').textContent='Write the situation, two options, mark the wiser one, and explain why.';
+    renderG3Editor();
+  }
+}
+function closeEditor(){
+  document.getElementById('modalOverlay').classList.remove('show');
+  editingGame = null;
+}
+function renderG1Editor(){
+  const body = document.getElementById('modalBody');
+  body.innerHTML='';
+  data.g1.forEach((row,i)=>{
+    body.insertAdjacentHTML('beforeend', g1RowHtml(row,i));
+  });
+  document.getElementById('modalAddBtn').onclick = ()=>{
+    data.g1.push({t:'', c:'tao'});
+    renderG1Editor();
+  };
+}
+function g1RowHtml(row,i){
+  return `<div class="row-edit" data-i="${i}">
+    <input type="text" value="${escapeAttr(row.t)}" onchange="data.g1[${i}].t=this.value">
+    <select onchange="data.g1[${i}].c=this.value">
+      <option value="tao" ${row.c==='tao'?'selected':''}>Tao</option>
+      <option value="bagay" ${row.c==='bagay'?'selected':''}>Bagay</option>
+      <option value="oras" ${row.c==='oras'?'selected':''}>Oras</option>
+      <option value="pera" ${row.c==='pera'?'selected':''}>Pera</option>
+    </select>
+    <button class="del-row" onclick="removeRow('g1',${i})">✕</button>
+  </div>`;
+}
+function renderG2Editor(){
+  const body = document.getElementById('modalBody');
+  body.innerHTML='';
+  data.g2.forEach((row,i)=>{
+    body.insertAdjacentHTML('beforeend', g2RowHtml(row,i));
+  });
+  document.getElementById('modalAddBtn').onclick = ()=>{
+    data.g2.push({t:'', c:'need'});
+    renderG2Editor();
+  };
+}
+function g2RowHtml(row,i){
+  return `<div class="row-edit" data-i="${i}">
+    <input type="text" value="${escapeAttr(row.t)}" onchange="data.g2[${i}].t=this.value">
+    <select onchange="data.g2[${i}].c=this.value">
+      <option value="need" ${row.c==='need'?'selected':''}>Kailangan (Need)</option>
+      <option value="want" ${row.c==='want'?'selected':''}>Gusto (Want)</option>
+    </select>
+    <button class="del-row" onclick="removeRow('g2',${i})">✕</button>
+  </div>`;
+}
+function renderG3Editor(){
+  const body = document.getElementById('modalBody');
+  body.innerHTML='';
+  data.g3.forEach((row,i)=>{
+    body.insertAdjacentHTML('beforeend', g3RowHtml(row,i));
+  });
+  document.getElementById('modalAddBtn').onclick = ()=>{
+    data.g3.push({s:'',a:'',b:'',correct:0,why:''});
+    renderG3Editor();
+  };
+}
+function g3RowHtml(row,i){
+  return `<div class="sc-edit-block" data-i="${i}">
+    <button class="del-row" style="float:right;" onclick="removeRow('g3',${i})">✕ remove</button>
+    <label>Situation</label>
+    <textarea rows="2" onchange="data.g3[${i}].s=this.value">${escapeHtml(row.s)}</textarea>
+    <label>Option A</label>
+    <input type="text" value="${escapeAttr(row.a)}" onchange="data.g3[${i}].a=this.value">
+    <label>Option B</label>
+    <input type="text" value="${escapeAttr(row.b)}" onchange="data.g3[${i}].b=this.value">
+    <div class="radio-row">
+      <label style="margin:0;"><input type="radio" name="corr${i}" ${row.correct===0?'checked':''} onchange="data.g3[${i}].correct=0"> A is wiser</label>
+      <label style="margin:0;"><input type="radio" name="corr${i}" ${row.correct===1?'checked':''} onchange="data.g3[${i}].correct=1"> B is wiser</label>
+    </div>
+    <label>Why (shown after answering)</label>
+    <textarea rows="2" onchange="data.g3[${i}].why=this.value">${escapeHtml(row.why)}</textarea>
+  </div>`;
+}
+function removeRow(key,i){
+  data[key].splice(i,1);
+  if(key==='g1') renderG1Editor();
+  if(key==='g2') renderG2Editor();
+  if(key==='g3') renderG3Editor();
+}
+function escapeAttr(str){
+  return String(str).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+}
+function saveEditor(){
+  closeEditor();
+}
+function resetDefaults(){
+  if(!editingGame) return;
+  data[editingGame] = JSON.parse(JSON.stringify(DEFAULTS[editingGame]));
+  if(editingGame==='g1') renderG1Editor();
+  if(editingGame==='g2') renderG2Editor();
+  if(editingGame==='g3') renderG3Editor();
+}
+</script>
+</body>
+</html>
